@@ -2,18 +2,38 @@
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
+use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
 
 class DataBaseController extends Controller {
 
-  public function push()
+  public function push(Request $request)
   {
-    //引数にRequest $requestを置いても同じエラー
-
-    // $data = Request::all();
-    //これつかうとAccess-Control-Allow-Originエラーになる。
-    // 異常値をresposeに渡すとheader設定できずに送信しちゃう？
-    $json = ["hoge"=>"fuga"];
-    return response($json, 200, array('Access-Control-Allow-Origin' => '*'));
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $data = $request->all();
+    var_dump($data["path"]);
+    var_dump($data);
+    return response($data, 200, $headers);
   }
 
+  public function set(Request $request)
+  {
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $data = $request->all();
+    return response($data, 200, $headers);
+  }
+
+  public function remove(Request $request)
+  {
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $data = $request->all();
+    return response($data, 200, $headers);
+  }
+
+  public function select(Request $request)
+  {
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $data = $request->all();
+    return response($data, 200, $headers);
+  }
 }

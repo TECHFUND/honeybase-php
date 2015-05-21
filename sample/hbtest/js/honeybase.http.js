@@ -162,7 +162,10 @@
       var idGenerator = new IdGenerator();
 			var id = idGenerator.getNextId();
 			var params = { path : this.path, value : value, id : id};
-      $_ajax("POST", self.db+"/push", params, cb);
+      $_ajax("POST", self.db+"/push", params, function(data){
+        data.value = JSON.parse(data.value);
+        cb(data);
+      });
 		}
 		,pushWithPriority: function(value, priority, onComplete) {
 			value._priority = priority;
@@ -201,7 +204,10 @@
 		,query: function(query) {
 			var params = { path : this.path, query : query};
 			return new Query(params);
-		}
+		},
+    select: function(query){
+      this.query(query);
+    }
 		,get: function(id, cb) {
 			var path = this.path;
 			if(typeof id == "function") {
@@ -360,7 +366,8 @@
   	function querystring(params) {
   		var params_array = []
   		for(var key in params) {
-  			params_array.push(key + "=" + encodeURIComponent(params[key]));
+        if(typeof params[key] == "string") params_array.push(key + "=" + encodeURIComponent(params[key]));
+        if(typeof params[key] == "object") params_array.push(key+"="+JSON.stringify(params[key]));
   		}
   		return params_array.join("&");
   	}

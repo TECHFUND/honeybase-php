@@ -16,3 +16,6 @@ $app->get('/', function() use ($app) {
 });
 
 $app->post('api/v1/db/push', 'App\Http\Controllers\DataBaseController@push');
+$app->post('api/v1/db/set', 'App\Http\Controllers\DataBaseController@set');
+$app->post('api/v1/db/remove', 'App\Http\Controllers\DataBaseController@remove');
+$app->post('api/v1/db/select', 'App\Http\Controllers\DataBaseController@select');
