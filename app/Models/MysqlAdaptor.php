@@ -17,6 +17,7 @@ class MysqlAdaptor {
     define("DB_USERNAME", "root");
     define("DB_PASSWORD", "root");
     define("DB_NAME", "test");
+    define("LOG_PATH", __DIR__."/../../storage/logs/mysql.log");
 
     /* 引数が無いと 'Whoops, looks like something went wrong.' になる */
 		// dbaccess
@@ -74,7 +75,7 @@ class MysqlAdaptor {
 		}
 
 		// create sql
-		$sql = "SELECT * FROM $tblname $where";
+		$sql = "SELECT * FROM $tbl $where";
 
 		// query
 		$result = mysqli_query($this->database, $sql);
@@ -134,7 +135,7 @@ class MysqlAdaptor {
 			$this->database->autocommit(FALSE);
 
 			// create sql
-			$sql = 'INSERT INTO ' . $tblname . ' (' . $insert_str . ') values (' . $values_str . ');';
+			$sql = 'INSERT INTO ' . $tbl . ' (' . $insert_str . ') values (' . $values_str . ');';
 
 			// query
 			$result = mysqli_query($this->database, $sql);
@@ -169,6 +170,7 @@ class MysqlAdaptor {
 		// count insert rows
 		if (0 != count($data)) {
 			// create insert query
+
 			foreach ($data as $key => $value) {
 				switch (gettype($value)) {
 					case "integer":

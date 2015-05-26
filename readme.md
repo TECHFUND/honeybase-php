@@ -9,7 +9,7 @@
 
 ## confirm
 - see `sample/index.html`
-- request to `curl -XPOST 'http://localhost:8000/api/v1/db/push' -d 'path=users&data={name:"shogo",sex:"male",action:"push"}'`
+- request to `curl -XPOST 'http://localhost:8000/api/v1/db/push' -d 'path=users&data={"name":"shogo","sex":"male","action":"push"}'`
 - `tail -f storage/logs/lumen.log`
 
 ## development roadmap status

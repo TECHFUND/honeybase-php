@@ -150,18 +150,18 @@
     onsend: function(channel, cb){
       this.subscribe(channel, cb);
     },
-		db : function(path) {
-			return new DataBase(path, this.api);
+		db : function(table) {
+			return new DataBase(table, this.api);
 		},
-		ping: function(path, cb) {
-      if(!cb) cb = path;
-      if(!path) path = "";
-      $_ajax("GET", this.host+path, {}, cb);
+		ping: function(table, cb) {
+      if(!cb) cb = table;
+      if(!table) table = "";
+      $_ajax("GET", this.host+table, {}, cb);
     }
 	}
 
-	function DataBase(path, api) {
-		this.path = pathutil.norm(path);
+	function DataBase(table, api) {
+		this.table = tableutil.norm(table);
     this.db = api+"/db";
 		this.data = null;
 	}
@@ -172,14 +172,14 @@
 			if(value.hasOwnProperty("id")) throw new Error("cannot set id in value object");
       var idGenerator = new IdGenerator();
 			var id = idGenerator.getNextId();
-			var params = { path : this.path, value : value, id : id};
+			var params = { table : this.table, value : value, id : id};
       $_ajax("POST", self.db+"/push", params, function(data){
         data.value = JSON.parse(data.value);
         cb(data);
       });
 		}
 		,remove: function(id, cb) {
-			var params = { path : this.path + "/" + id};
+			var params = { table : this.table + "/" + id};
 
       $_ajax("DELETE", this.db+"/remove", params, function(data){
         data.value = JSON.parse(data.value);
@@ -187,13 +187,13 @@
       });
 		}
 		,set: function(id, value, cb) {
-			var path = this.path;
+			var table = this.table;
 
 			if(typeof id == "object") {
 				cb = value;
 				value = id;
 			}else if(typeof id == "string"){
-				path = path + "/" + id;
+				table = table + "/" + id;
 			}else{
 				throw new Error("invalid parameter type");
 			}
@@ -204,7 +204,7 @@
 
 			if(value.hasOwnProperty("id")) throw new Error("cannot set id in value object");
 
-			var params = { path : path, value : value};
+			var params = { table : table, value : value};
 
       $_ajax("PATCH", this.db+"/set", params, function(data){
         data.value = JSON.parse(data.value);
@@ -216,39 +216,45 @@
 		},
     select: function(query, cb){
       var self = this;
-			var params = { path : self.path, value : query};
+			var params = { table : self.table, value : query};
       var selector_obj = new Selector(params, self.db);
       if(cb) selector_obj.done(cb);
       return selector_obj;
     }
+
+
+
+    /*
 		,get: function(id, cb) {
-			var path = this.path;
+			var table = this.table;
 			if(typeof id == "function") {
 				cb = id;
 			}else if(typeof id == "string") {
-				path = path + "/" + id;
+				table = table + "/" + id;
 			}else{
 				throw new Error("invalid id type");
 			}
-			var params = { path : path };
+			var params = { table : table };
 
       $_ajax("GET", this.db+"/get", params, function(data){
         data.value = JSON.parse(data.value);
         cb(data);
       });
 		}
-		,getPath: function() {
-			return this.path;
+
+		,getTable: function() {
+			return this.table;
 		}
 		,parent: function() {
-			return new DataStore(pathutil.parent(this.path), this.accessToken);
+			return new DataStore(tableutil.parent(this.table), this.accessToken);
 		}
 		,child: function(query) {
-			return new DataStore(pathutil.norm(this.path + "/" + query), this.accessToken);
+			return new DataStore(tableutil.norm(this.table + "/" + query), this.accessToken);
 		}
 		,root: function() {
 			return new DataStore("/",this.accessToken);
 		}
+    */
 	}
 	function Selector(params, db) {
 		this.params = params;
@@ -297,9 +303,9 @@
 		}
 	}
 
-	var pathutil = {
-			norm : function(path) {
-				  var a = path.split('/');
+	var tableutil = {
+			norm : function(table) {
+				  var a = table.split('/');
 				  var b = [];
 				  for(var i=0;i < a.length;i++) {
 				    if(a[i] != '') {
@@ -308,13 +314,13 @@
 				  }
 				  return b.join('/');
 			},
-			parent : function(path) {
-				  var a = path.split('/');
+			parent : function(table) {
+				  var a = table.split('/');
 				  a.pop();
 				  return a.join('/');
 			},
-			path_name : function(path) {
-				return path.indexOf("/")
+			table_name : function(table) {
+				return table.indexOf("/")
 			}
 	}
 

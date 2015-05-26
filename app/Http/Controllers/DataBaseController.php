@@ -5,7 +5,7 @@ use App\Models\MysqlAdaptor;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
-
+use Log;
 
 
 class DataBaseController extends Controller {
@@ -13,9 +13,18 @@ class DataBaseController extends Controller {
   /* jsからajaxするときvar_dumpしてると落ちてallow_originエラーになるので注意 */
   public function push(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
     $data = $request->all();
-    $ma = new MysqlAdaptor();
+    $tbl = $data["table"];
+    $json = json_decode($data["data"]);
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $db = new MysqlAdaptor();
+    $result = false;
+
+    if($tbl == "" || $json == null){
+      Log::error("input invalid");
+    } else {
+      $result = $db->insert($tbl, $json);
+    }
     return response($data, 200, $headers);
   }
 
