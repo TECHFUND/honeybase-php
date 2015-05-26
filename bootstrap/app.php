@@ -19,7 +19,7 @@ $app = new Laravel\Lumen\Application(
 	realpath(__DIR__.'/../')
 );
 
-// $app->withFacades();
+$app->withFacades();
 
 // $app->withEloquent();
 
@@ -79,6 +79,7 @@ $app->singleton(
 */
 
 // $app->register('App\Providers\AppServiceProvider');
+// $app->register('Barryvdh\Debugbar\ServiceProvider');
 
 /*
 |--------------------------------------------------------------------------

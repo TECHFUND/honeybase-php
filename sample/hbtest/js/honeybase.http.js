@@ -15,7 +15,6 @@
 		}
 	}
 
-	var honeyCumbSocket = null;
 	var honeybase_local = {
 		timestamp : null,
 		id_header : null
@@ -114,7 +113,7 @@
 			var params = {};
 	    FB.getLoginStatus(function(response) {
 		    FB.logout(function(response) {
-  				$_ajax("POST", self.api + "/logout", params, function(data) {
+  				$_ajax("DELETE", self.api + "/logout", params, function(data) {
 						if(cb) cb(data.err);
   				});
         });
@@ -136,8 +135,20 @@
 			var params = { channel : channel, value : value};
       socket.publish(cb);
 		},
+		pub: function(channel, value, cb) {
+      this.publish(channel, value, cb);
+		},
+		send: function(channel, value, cb) {
+      this.publish(channel, value, cb);
+		},
     subscribe: function(channel, cb){
       socket.subscribe(cb);
+    },
+    sub: function(channel, cb){
+      this.subscribe(channel, cb);
+    },
+    onsend: function(channel, cb){
+      this.subscribe(channel, cb);
     },
 		db : function(path) {
 			return new DataBase(path, this.api);
@@ -167,46 +178,48 @@
         cb(data);
       });
 		}
-		,pushWithPriority: function(value, priority, onComplete) {
-			value._priority = priority;
-			return this.push(value, onComplete);
-		}
-		,remove: function(id, onComplete) {
+		,remove: function(id, cb) {
 			var params = { path : this.path + "/" + id};
-			honeyCumbSocket.send_and_callback("unset",params,onComplete);
+
+      $_ajax("DELETE", this.db+"/remove", params, function(data){
+        data.value = JSON.parse(data.value);
+        cb(data);
+      });
 		}
-		,set: function(id, value, onComplete) {
+		,set: function(id, value, cb) {
 			var path = this.path;
+
 			if(typeof id == "object") {
-				onComplete = value;
+				cb = value;
 				value = id;
 			}else if(typeof id == "string"){
 				path = path + "/" + id;
 			}else{
 				throw new Error("invalid parameter type");
 			}
+
 			if(typeof value != "object") {
 				throw new Error("value must be object");
 			}
+
 			if(value.hasOwnProperty("id")) throw new Error("cannot set id in value object");
+
 			var params = { path : path, value : value};
-			honeyCumbSocket.send_and_callback("set", params, onComplete);
+
+      $_ajax("PATCH", this.db+"/set", params, function(data){
+        data.value = JSON.parse(data.value);
+        cb(data);
+      });
 		}
-		,setPriority : function(id, priority, onComplete) {
-			var params = {
-				path : this.path + "/" + id,
-				value : {
-					_priority : priority
-				}
-			};
-			honeyCumbSocket.send_and_callback("set", params, onComplete);
-		}
-		,query: function(query) {
-			var params = { path : this.path, query : query};
-			return new Query(params);
+		,query: function(q, cb) {
+      return this.select(q, cb);
 		},
-    select: function(query){
-      this.query(query);
+    select: function(query, cb){
+      var self = this;
+			var params = { path : self.path, value : query};
+      var selector_obj = new Selector(params, self.db);
+      if(cb) selector_obj.done(cb);
+      return selector_obj;
     }
 		,get: function(id, cb) {
 			var path = this.path;
@@ -218,9 +231,11 @@
 				throw new Error("invalid id type");
 			}
 			var params = { path : path };
-			honeyCumbSocket.send_and_callback("get",params,function(data) {
-				cb(data);
-			});
+
+      $_ajax("GET", this.db+"/get", params, function(data){
+        data.value = JSON.parse(data.value);
+        cb(data);
+      });
 		}
 		,getPath: function() {
 			return this.path;
@@ -235,15 +250,17 @@
 			return new DataStore("/",this.accessToken);
 		}
 	}
-	function Query(params) {
+	function Selector(params, db) {
 		this.params = params;
 		this.params.option = { };
+    this.db = db;
 	}
-	Query.prototype = {
+	Selector.prototype = {
 		done: function(cb) {
-			honeyCumbSocket.send_and_callback("fm",this.params,function(data) {
-				cb(data);
-			});
+      $_ajax("GET", this.db+"/select", this.params, function(data){
+        data.value = JSON.parse(data.value);
+        cb(data);
+      });
 		}
 		,skip: function(skip) {
 			if(!(typeof skip == "number")) {

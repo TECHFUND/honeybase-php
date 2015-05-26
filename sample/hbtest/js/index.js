@@ -5,6 +5,10 @@
     console.log(data);
   });
 
+  hb.db("users").query({name:"Shogo", age: 24, job:"unko", address: "Wajiro"}).done(function(data){
+    console.log(data);
+  });
+
   /*
   hb.db("users").select({name:"Shogo"}).done(function(data){
     console.log(data);
