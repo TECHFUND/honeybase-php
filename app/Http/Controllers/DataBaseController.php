@@ -15,15 +15,15 @@ class DataBaseController extends Controller {
   {
     $data = $request->all();
     $tbl = $data["table"];
-    $json = json_decode($data["data"]);
+    $value = json_decode($data["value"]);
     $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
     $db = new MysqlAdaptor();
     $result = false;
 
-    if($tbl == "" || $json == null){
+    if($tbl == "" || $value == null){
       Log::error("input invalid");
     } else {
-      $result = $db->insert($tbl, $json);
+      $result = $db->insert($tbl, $value);
     }
     return response($data, 200, $headers);
   }
