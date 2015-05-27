@@ -59,6 +59,7 @@ class MysqlAdaptor {
 		// init
 		$where = "";
 		$rows = array();
+    $bool = false;
 
 		// create where query
 		foreach ($data as $key => $value) {
@@ -85,9 +86,10 @@ class MysqlAdaptor {
 			while ($row = $result->fetch_assoc()) {
 				$rows[] = $row;
 			}
+      $bool = true;
 		}
 
-		return $rows;
+		return ["err"=>$bool, "data"=>$rows];
 	}
 
 
@@ -143,7 +145,7 @@ class MysqlAdaptor {
 			if (1 != $this->database->affected_rows) {
 				// Roll back if there were rows affected is not one line
 				$this->database->rollback();
-				error_log("[" . date("Y-m-d h:i:s") . "]Insert失敗 sql文:" . $sql . "\n", 3, LOG_PATH);
+        $this->errorReport($sql);
 			} else {
 				// Had row affected commit if one line
 				$this->database->commit();
@@ -201,7 +203,7 @@ class MysqlAdaptor {
 			if (1 != $this->database->affected_rows) {
 				// Roll back if there were rows affected is not one line
 				$this->database->rollback();
-				error_log("[" . date("Y-m-d h:i:s") . "]Create失敗 sql文:" . $sql . "\n", 3, LOG_PATH);
+        $this->errorReport($sql);
 			} else {
 				// Had row affected commit if one line
 				$this->database->commit();
@@ -210,5 +212,124 @@ class MysqlAdaptor {
 		}
 		return $return_flg;
 	}
+
+
+
+
+	/**
+	 * update method
+	 * @param		str		$tbl			table name
+	 * @param		int		$id			update id
+	 * @param		array		$value			update value
+	 * @return		arr					true：true　false：false
+	 */
+	function update($tbl, $id, $value = array()) {
+		// init
+		$sql_param = array();
+		$return_flg = false;
+
+		// search tbl
+		$sql = "SHOW TABLES FROM " . DB_NAME . " LIKE '" . $tbl . "';";
+		$result = mysqli_query($this->database, $sql);
+
+		// tbl none
+		if (0 == $result->num_rows) {
+      Log::error("There is no table, cannot update target record");
+		}
+
+
+		// count insert rows
+		if (0 < $id) {
+			// auto commit to OFF
+			$this->database->autocommit(FALSE);
+
+			// create sql
+      $set_str = 'SET ' . $this->genSetStr($value);
+			$sql = 'UPDATE ' . $tbl . ' ' . $set_str . ' WHERE id=' . $id . " ;";
+
+      // 更新
+      /* 変化無し・id無し・Schemeと合わない　のときはfalseが返る */
+      $existance = $this->select($tbl, ["id"=>$id])["err"];
+      $result = ($existance) ? mysqli_query($this->database, $sql) : false;
+
+			if (1 != $this->database->affected_rows) {
+				// Roll back if there were rows affected is not one line
+				$this->database->rollback();
+        $this->errorReport($sql);
+			} else {
+				// Had row affected commit if one line
+				$this->database->commit();
+				$return_flg = true;
+			}
+		}
+		return $return_flg;
+	}
+
+  function genSetStr($data){
+    $str = "";
+    foreach ($data as $key => $value) {
+			if (gettype($value) == "string") {
+        $value = "'".$value."'";
+			}
+      $str .= $key . '=' . $value . ", ";
+    }
+    return trim($str, ", ");
+  }
+
+
+
+
+
+
+	/**
+	 * delete method
+	 * @param		str		$tbl			table name
+	 * @param		int		$id			delete id
+	 * @return		arr					true：true　false：false
+	 */
+	function delete($tbl, $id) {
+		// init
+		$sql_param = array();
+		$return_flg = false;
+
+		// search tbl
+		$sql = "SHOW TABLES FROM " . DB_NAME . " LIKE '" . $tbl . "';";
+		$result = mysqli_query($this->database, $sql);
+
+		// tbl none
+		if (0 == $result->num_rows) {
+      Log::error("There is no table, cannot remove target record");
+		}
+
+
+		// count insert rows
+		if (0 < $id) {
+			// auto commit to OFF
+			$this->database->autocommit(FALSE);
+
+			// create sql
+			$sql = 'DELETE FROM ' . $tbl . ' WHERE id = ' . $id;
+
+			// query
+			$result = mysqli_query($this->database, $sql);
+
+			if (1 != $this->database->affected_rows) {
+				// Roll back if there were rows affected is not one line
+				$this->database->rollback();
+        $this->errorReport($sql);
+			} else {
+				// Had row affected commit if one line
+				$this->database->commit();
+				$return_flg = true;
+			}
+		}
+		return $return_flg;
+	}
+
+  function errorReport($sql){
+    $msg = "[" . date("Y-m-d h:i:s") . "]Query failed by:" . $sql . "\n";
+		error_log($msg, 3, LOG_PATH);
+    Log::error($msg);
+  }
 
 }

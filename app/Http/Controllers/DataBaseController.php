@@ -11,7 +11,7 @@ use Log;
 class DataBaseController extends Controller {
 
   /* jsからajaxするときvar_dumpしてると落ちてallow_originエラーになるので注意 */
-  public function push(Request $request)
+  public function insert(Request $request)
   {
     $data = $request->all();
     $tbl = $data["table"];
@@ -21,38 +21,69 @@ class DataBaseController extends Controller {
     $result = false;
 
     if($tbl == "" || $value == null){
-      Log::error("input invalid");
+      Log::error("push input invalid");
     } else {
       $result = $db->insert($tbl, $value);
     }
-    return response($data, 200, $headers);
+    $res = ["flag"=>$result, "data"=>($result) ? $data : null];
+    return response($res, 200, $headers);
   }
 
-  public function set(Request $request)
+  public function update(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
     $data = $request->all();
-    return response($data, 200, $headers);
+    $tbl = $data["table"];
+    $id = $data['id'];
+    $value = json_decode($data['value']);
+
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $db = new MysqlAdaptor();
+    $result = false;
+
+    if($tbl == "" || $id < 0){
+      Log::error("set input invalid");
+    } else {
+      $result = $db->update($tbl, $id, $value);
+    }
+    $res = ["flag"=>$result, "data"=> ["id"=>$id, "value"=>$value]];
+    return response($res, 200, $headers);
   }
 
-  public function remove(Request $request)
+  public function delete(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
     $data = $request->all();
-    return response($data, 200, $headers);
+    $tbl = $data["table"];
+    $id = $data['id'];
+
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $db = new MysqlAdaptor();
+    $result = false;
+
+    if($tbl == "" || $id < 0){
+      Log::error("remove input invalid");
+    } else {
+      $result = $db->delete($tbl, $id);
+    }
+    $res = ["flag"=>$result, "id"=>$id];
+    return response($res, 200, $headers);
   }
 
   public function select(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
     $data = $request->all();
-    return response($data, 200, $headers);
-  }
+    $tbl = $data["table"];
+    $value = json_decode($data["value"]);
 
-  public function get(Request $request)
-  {
     $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
-    $data = $request->all();
-    return response($data, 200, $headers);
+    $db = new MysqlAdaptor();
+    $result = false;
+
+    if($tbl == "" || $value == null){
+      Log::error("select input invalid");
+    } else {
+      $result = $db->select($tbl, $value);
+    }
+    $res = $result;
+    return response($res, 200, $headers);
   }
 }

@@ -167,94 +167,56 @@
 	}
 
 	DataBase.prototype = {
-		push: function(value, cb) {
+		insert: function(value, cb) {
       var self = this;
 			if(value.hasOwnProperty("id")) throw new Error("cannot set id in value object");
       var idGenerator = new IdGenerator();
 			var id = idGenerator.getNextId();
 			var params = { table : this.table, value : value, id : id};
-      $_ajax("POST", self.db+"/push", params, function(data){
+      $_ajax("POST", self.db+"/insert", params, function(res){
+        var flag = res.flag;
+        var data = res.data;
         data.value = JSON.parse(data.value);
-        cb(data);
+        cb(flag, data);
       });
-		}
-		,remove: function(id, cb) {
-			var params = { table : this.table + "/" + id};
-
-      $_ajax("DELETE", this.db+"/remove", params, function(data){
-        data.value = JSON.parse(data.value);
-        cb(data);
+		},
+    push: function(value, cb){
+      this.insert(value, cb);
+    },
+    delete: function(id, cb) {
+			if(typeof id != "number") throw new Error("id must be number");
+			var params = { id: id+"", table : this.table };
+      $_ajax("POST", this.db+"/delete", params, function(res){
+        cb(res.flag, res.data);
       });
-		}
-		,set: function(id, value, cb) {
-			var table = this.table;
-
-			if(typeof id == "object") {
-				cb = value;
-				value = id;
-			}else if(typeof id == "string"){
-				table = table + "/" + id;
-			}else{
-				throw new Error("invalid parameter type");
-			}
-
-			if(typeof value != "object") {
-				throw new Error("value must be object");
-			}
-
+		},
+    remove: function(id, cb){
+      this.delete(id, cb);
+    },
+    update: function(id, value, cb) {
+			if(typeof id != "number") throw new Error("id must be number");
+			if(typeof value != "object") throw new Error("value must be object");
 			if(value.hasOwnProperty("id")) throw new Error("cannot set id in value object");
 
-			var params = { table : table, value : value};
+			var params = { id: id+"", table : this.table, value : value};
 
-      $_ajax("PATCH", this.db+"/set", params, function(data){
-        data.value = JSON.parse(data.value);
-        cb(data);
+      $_ajax("POST", this.db+"/update", params, function(res){
+        cb(res.flag, res.data);
       });
-		}
-		,query: function(q, cb) {
-      return this.select(q, cb);
 		},
+    set: function(id, value, cb){
+      this.update(id, value, cb);
+    },
     select: function(query, cb){
       var self = this;
 			var params = { table : self.table, value : query};
       var selector_obj = new Selector(params, self.db);
       if(cb) selector_obj.done(cb);
       return selector_obj;
-    }
-
-
-
-    /*
-		,get: function(id, cb) {
-			var table = this.table;
-			if(typeof id == "function") {
-				cb = id;
-			}else if(typeof id == "string") {
-				table = table + "/" + id;
-			}else{
-				throw new Error("invalid id type");
-			}
-			var params = { table : table };
-
-      $_ajax("GET", this.db+"/get", params, function(data){
-        data.value = JSON.parse(data.value);
-        cb(data);
-      });
+    },
+    query: function(q, cb) {
+      return this.select(q, cb);
 		}
-
-		,getTable: function() {
-			return this.table;
-		}
-		,parent: function() {
-			return new DataStore(tableutil.parent(this.table), this.accessToken);
-		}
-		,child: function(query) {
-			return new DataStore(tableutil.norm(this.table + "/" + query), this.accessToken);
-		}
-		,root: function() {
-			return new DataStore("/",this.accessToken);
-		}
-    */
 	}
 	function Selector(params, db) {
 		this.params = params;
@@ -263,9 +225,8 @@
 	}
 	Selector.prototype = {
 		done: function(cb) {
-      $_ajax("GET", this.db+"/select", this.params, function(data){
-        data.value = JSON.parse(data.value);
-        cb(data);
+      $_ajax("GET", this.db+"/select", this.params, function(res){
+        cb(res.flag, res.data);
       });
 		}
 		,skip: function(skip) {
