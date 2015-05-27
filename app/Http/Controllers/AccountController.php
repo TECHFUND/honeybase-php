@@ -1,9 +1,18 @@
 <?php namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\MysqlAdaptor;
+
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
+
+use Facebook\FacebookSession;
+use Facebook\FacebookRequest;
+use Facebook\GraphUser;
+use Facebook\FacebookRequestException;
+
+use Log;
 
 class AccountController extends Controller {
 
@@ -15,19 +24,74 @@ class AccountController extends Controller {
     return response($data, 200, $headers);
   }
 
-
-  public function signup(Request $request)
+  public function oauth(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
     $data = $request->all();
-    return response($data, 200, $headers);
+    $token = $data['user_access_token'];
+    $provider = $data['provider'];
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+
+    if($provider == "facebook"){
+      FacebookSession::setDefaultApplication('759914587441162', 'f4a21be93e9e6e8b682f6f3d47a3682d');
+      $session = new FacebookSession($token);
+
+      if($session) {
+        try {
+          $me_request = new FacebookRequest($session, 'GET', '/me');
+          $user_profile = $me_request->execute()->getGraphObject(GraphUser::className());
+          $social_id = $user_profile->getId();
+        } catch(FacebookRequestException $e) {
+          Log::error( "Exception occured, code: " . $e->getCode() );
+          Log::error( " with message: " . $e->getMessage() );
+        }
+      }
+      $user = $this->searchOrCreateUser($social_id);
+      $session_id = $this->createOrUpdateSession($user);
+      setcookie(SERVICE_NAME."id", $session_id);
+    }
+
+    return response(["flag"=>true, "user"=>$user], 200, $headers);
   }
 
-  public function login(Request $request)
-  {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
-    $data = $request->all();
-    return response($data, 200, $headers);
+  private function searchOrCreateUser($social_id){
+    /* アカウントがまだ存在しなかったら作る。存在したらスルー。 */
+    $db = new MysqlAdaptor();
+    $existing_user = $db->select("users", ["social_id"=>$social_id]);
+    $user = $existing_user["data"][0];
+    if( count($existing_user['data']) > 0 ){
+      $inserted_result = $db->insert("users", ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id]);
+      if($inserted_result['flag']){
+        $user = $inserted_result['data'];
+      }
+    }
+    return $user;
+  }
+
+  private function createOrUpdateSession($user){
+    /* 既存・新規作成ユーザーIDをランダム文字列と紐づける */
+    $db = new MysqlAdaptor();
+    $existing_session = $db->select("sessions", ["social_id"=>$social_id]);
+    $new_session_id = $this.createRandomString(100);
+    if( count($existing_session['data']) > 0 ){
+      $target_id = $existing_session['data'][0]['id'];
+      $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']])
+    } else {
+      $db->insert("sessions", ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']])
+    }
+    return $new_session_id;
+  }
+
+  private function createRandomString($length) {
+      $keys = array_flip(array_merge(
+          range('0', '9'),
+          range('a', 'z'),
+          range('A', 'Z')
+      ));
+      $s = '';
+      for ($i = 0; $i < $length; $i++) {
+          $s .= array_rand($keys);
+      }
+      return $s;
   }
 
   public function logout(Request $request)
@@ -37,10 +101,24 @@ class AccountController extends Controller {
     return response($data, 200, $headers);
   }
 
+  /*
+  public function signup(Request $request)
+  {
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $data = $request->all();
+    return response($data, 200, $headers);
+  }
+  public function login(Request $request)
+  {
+    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $data = $request->all();
+    return response($data, 200, $headers);
+  }
   public function anonymous(Request $request)
   {
     $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
     $data = $request->all();
     return response($data, 200, $headers);
   }
+  */
 }

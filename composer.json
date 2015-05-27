@@ -8,7 +8,8 @@
         "laravel/lumen-framework": "5.0.*",
         "vlucas/phpdotenv": "~1.0",
         "spatie/laravel-tail": "^1.1",
-        "barryvdh/laravel-debugbar": "master"
+        "barryvdh/laravel-debugbar": "dev-master",
+        "facebook/php-sdk-v4" : "^4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~4.0"

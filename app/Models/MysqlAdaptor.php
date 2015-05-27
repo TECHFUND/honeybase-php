@@ -89,7 +89,7 @@ class MysqlAdaptor {
       $bool = true;
 		}
 
-		return ["err"=>$bool, "data"=>$rows];
+		return ["flag"=>$bool, "data"=>$rows];
 	}
 
 
@@ -152,7 +152,7 @@ class MysqlAdaptor {
 				$return_flg = true;
 			}
 		}
-		return $return_flg;
+		return ["flag"=>$return_flg, "data"=>$result->current_field];
 	}
 
 
@@ -210,7 +210,7 @@ class MysqlAdaptor {
 				$return_flg = true;
 			}
 		}
-		return $return_flg;
+		return ["flag"=>$return_flg, "data"=>$result->current_field];
 	}
 
 
@@ -249,7 +249,7 @@ class MysqlAdaptor {
 
       // 更新
       /* 変化無し・id無し・Schemeと合わない　のときはfalseが返る */
-      $existance = $this->select($tbl, ["id"=>$id])["err"];
+      $existance = $this->select($tbl, ["id"=>$id])["flag"];
       $result = ($existance) ? mysqli_query($this->database, $sql) : false;
 
 			if (1 != $this->database->affected_rows) {
@@ -262,7 +262,7 @@ class MysqlAdaptor {
 				$return_flg = true;
 			}
 		}
-		return $return_flg;
+		return ["flag"=>$return_flg, "data"=>$result->current_field];
 	}
 
   function genSetStr($data){
@@ -323,7 +323,7 @@ class MysqlAdaptor {
 				$return_flg = true;
 			}
 		}
-		return $return_flg;
+		return ["flag"=>$return_flg, "data"=>$result->current_field];
 	}
 
   function errorReport($sql){

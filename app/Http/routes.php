@@ -16,10 +16,8 @@ $app->get('/', function() use ($app) {
 });
 
 $app->get('api/v1/get_current_user', 'App\Http\Controllers\AccountController@getCurrentUser');
-$app->post('api/v1/signup', 'App\Http\Controllers\AccountController@signup');
-$app->post('api/v1/login', 'App\Http\Controllers\AccountController@login');
+$app->post('api/v1/oauth', 'App\Http\Controllers\AccountController@oauth');
 $app->post('api/v1/logout', 'App\Http\Controllers\AccountController@logout');
-$app->post('api/v1/anonymous', 'App\Http\Controllers\AccountController@anonymousLogin');
 
 
 $app->post('api/v1/db/insert', 'App\Http\Controllers\DataBaseController@insert');

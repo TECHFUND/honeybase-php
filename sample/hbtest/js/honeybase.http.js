@@ -46,6 +46,9 @@
 	};
 
 	HoneyBase.prototype = {
+/************************************
+ * OAUTH
+ ************************************/
     auth : function(provider, option, cb){
       if(!cb) {
         cb = option;
@@ -61,7 +64,7 @@
                 user_access_token: response.authResponse.accessToken,
                 option: JSON.stringify(option)
               };
-              $_ajax("POST", self.api+"/oauth/login", params, function(data){
+              $_ajax("POST", self.api+"/oauth", params, function(data){
                 cb(null, data);
               });
   		      } else {
@@ -83,6 +86,33 @@
 				cb(data.err, data.user);
 			});
 		},
+		logout : function(cb) {
+			var self = this;
+			var params = {};
+	    FB.getLoginStatus(function(response) {
+		    FB.logout(function(response) {
+  				$_ajax("POST", self.api + "/logout", params, function(data) {
+						if(cb) cb(data.err);
+  				});
+        });
+      });
+		},
+		getCurrentUser : function(cb) {
+			var self = this;
+			var params = {};
+	    FB.getLoginStatus(function(response) {
+        if(response.status == "connected"){
+  				$_ajax("GET", self.api + "/get_current_user", params, function(data) {
+  					if(data.user) cb(null, data.user);
+  					else cb(2, null);
+          });
+        } else {
+          cb(1, null);
+        }
+			});
+		},
+
+    /*
 		addAccount : function(email,secret,option,cb) {
       if(!cb) {
         cb = option;
@@ -108,29 +138,12 @@
 				else cb(1, null);
 			});
 		},
-		logout : function(cb) {
-			var self = this;
-			var params = {};
-	    FB.getLoginStatus(function(response) {
-		    FB.logout(function(response) {
-  				$_ajax("DELETE", self.api + "/logout", params, function(data) {
-						if(cb) cb(data.err);
-  				});
-        });
-      });
-		},
-		getCurrentUser : function(cb) {
-	    FB.getLoginStatus(function(response) {
-        if(response.status == "connected"){
-  				$_ajax("GET", self.api + "/get_current_user", params, function(data) {
-  					if(data.user) cb(null, data.user);
-  					else cb(2, null);
-          });
-        } else {
-          cb(1, null);
-        }
-			});
-		},
+    */
+
+
+/************************************
+ * PUBSUB
+ ************************************/
 		publish: function(channel, value, cb) {
 			var params = { channel : channel, value : value};
       socket.publish(cb);
@@ -160,6 +173,9 @@
     }
 	}
 
+/************************************
+ * DATABASE
+ ************************************/
 	function DataBase(table, api) {
 		this.table = tableutil.norm(table);
     this.db = api+"/db";
@@ -218,6 +234,10 @@
       return this.select(q, cb);
 		}
 	}
+
+/************************************
+ * SEARCH
+ ************************************/
 	function Selector(params, db) {
 		this.params = params;
 		this.params.option = { };

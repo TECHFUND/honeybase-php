@@ -23,7 +23,7 @@ class DataBaseController extends Controller {
     if($tbl == "" || $value == null){
       Log::error("push input invalid");
     } else {
-      $result = $db->insert($tbl, $value);
+      $result = $db->insert($tbl, $value)["flag"];
     }
     $res = ["flag"=>$result, "data"=>($result) ? $data : null];
     return response($res, 200, $headers);
@@ -43,7 +43,7 @@ class DataBaseController extends Controller {
     if($tbl == "" || $id < 0){
       Log::error("set input invalid");
     } else {
-      $result = $db->update($tbl, $id, $value);
+      $result = $db->update($tbl, $id, $value)["flag"];
     }
     $res = ["flag"=>$result, "data"=> ["id"=>$id, "value"=>$value]];
     return response($res, 200, $headers);
@@ -62,7 +62,7 @@ class DataBaseController extends Controller {
     if($tbl == "" || $id < 0){
       Log::error("remove input invalid");
     } else {
-      $result = $db->delete($tbl, $id);
+      $result = $db->delete($tbl, $id)["flag"];
     }
     $res = ["flag"=>$result, "id"=>$id];
     return response($res, 200, $headers);
@@ -81,7 +81,7 @@ class DataBaseController extends Controller {
     if($tbl == "" || $value == null){
       Log::error("select input invalid");
     } else {
-      $result = $db->select($tbl, $value);
+      $result = $db->select($tbl, $value)["flag"];
     }
     $res = $result;
     return response($res, 200, $headers);
