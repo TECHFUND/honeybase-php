@@ -22,10 +22,12 @@
       return true;
     });
 
-    /*更新ボタン*/
+    /*更新ボタン*/ //schemeが違ったり変更がなかったりidがなかったりするとflagがfalse
     $(".update").click(function(e){
-      UserDB.update(clickedID(e), {name:"Peaske", age:27, job:"CEO", address:"Shibuya"}, function(flag, data){
+      var rand_data = {name: chance.name(), age: chance.age(), job: chance.cc_type(), address: chance.city()};
+      UserDB.update(clickedID(e), rand_data, function(flag, data){
         if(flag) location.reload();
+        else alert("something wrong");
       });
     });
 
@@ -39,7 +41,8 @@
 
   /* click時にpushして更新 */
   $("#push").click(function(e){
-    UserDB.insert({name: chance.name(), age: chance.age(), job: chance.cc_type(), address: chance.city()}, function(flag, data){
+    var rand_data = {name: chance.name(), age: chance.age(), job: chance.cc_type(), address: chance.city()};
+    UserDB.insert(rand_data, function(flag, data){
       if(flag) location.reload();
     });
   });
