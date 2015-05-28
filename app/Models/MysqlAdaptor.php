@@ -13,12 +13,6 @@ class MysqlAdaptor {
 	// constructer
 	function __construct() {
 
-    define("DB_HOST", "localhost");
-    define("DB_USERNAME", "root");
-    define("DB_PASSWORD", "root");
-    define("DB_NAME", "test");
-    define("LOG_PATH", __DIR__."/../../storage/logs/mysql.log");
-
     /* 引数が無いと 'Whoops, looks like something went wrong.' になる */
 		// dbaccess
     if(DB_HOST=="") {

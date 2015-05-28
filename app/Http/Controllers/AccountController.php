@@ -72,7 +72,7 @@ class AccountController extends Controller {
     /* 既存・新規作成ユーザーIDをランダム文字列と紐づける */
     $db = new MysqlAdaptor();
     $existing_session = $db->select("sessions", ["social_id"=>$social_id]);
-    $new_session_id = Util->createRandomString(100);
+    $new_session_id = Util::createRandomString(100);
     if( count($existing_session['data']) > 0 ){
       $target_id = $existing_session['data'][0]['id'];
       $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']])

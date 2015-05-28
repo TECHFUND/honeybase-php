@@ -1,11 +1,14 @@
 <?php namespace App\Util;
 
+use Log;
+
 class Util {
 
   public static function getJSON ($path) {
     $filename = $path;
     $handle = fopen($filename, 'r');
-    $data = json_decode(fread($handle, filesize($filename)));
+    $json_str = fread($handle, filesize($filename));
+    $data = json_decode($json_str);
     fclose($handle);
     return $data;
   }
