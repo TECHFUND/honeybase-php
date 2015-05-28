@@ -93,5 +93,5 @@ $app->singleton(
 */
 
 require __DIR__.'/../app/Http/routes.php';
-
+require __DIR__.'/../config/define.php';
 return $app;

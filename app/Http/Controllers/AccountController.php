@@ -13,13 +13,14 @@ use Facebook\GraphUser;
 use Facebook\FacebookRequestException;
 
 use Log;
+use App\Util\Util;
 
 class AccountController extends Controller {
 
   /* jsからajaxするときvar_dumpしてると落ちてallow_originエラーになるので注意 */
   public function getCurrentUser(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $data = $request->all();
     return response($data, 200, $headers);
   }
@@ -29,10 +30,10 @@ class AccountController extends Controller {
     $data = $request->all();
     $token = $data['user_access_token'];
     $provider = $data['provider'];
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
 
     if($provider == "facebook"){
-      FacebookSession::setDefaultApplication('759914587441162', 'f4a21be93e9e6e8b682f6f3d47a3682d');
+      FacebookSession::setDefaultApplication(FACEBOOK_CONSUMER_KEY, FACEBOOK_CONSUMER_SECRET);
       $session = new FacebookSession($token);
 
       if($session) {
@@ -71,7 +72,7 @@ class AccountController extends Controller {
     /* 既存・新規作成ユーザーIDをランダム文字列と紐づける */
     $db = new MysqlAdaptor();
     $existing_session = $db->select("sessions", ["social_id"=>$social_id]);
-    $new_session_id = $this.createRandomString(100);
+    $new_session_id = Util->createRandomString(100);
     if( count($existing_session['data']) > 0 ){
       $target_id = $existing_session['data'][0]['id'];
       $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']])
@@ -81,22 +82,9 @@ class AccountController extends Controller {
     return $new_session_id;
   }
 
-  private function createRandomString($length) {
-      $keys = array_flip(array_merge(
-          range('0', '9'),
-          range('a', 'z'),
-          range('A', 'Z')
-      ));
-      $s = '';
-      for ($i = 0; $i < $length; $i++) {
-          $s .= array_rand($keys);
-      }
-      return $s;
-  }
-
   public function logout(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $data = $request->all();
     return response($data, 200, $headers);
   }
@@ -104,19 +92,19 @@ class AccountController extends Controller {
   /*
   public function signup(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $data = $request->all();
     return response($data, 200, $headers);
   }
   public function login(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $data = $request->all();
     return response($data, 200, $headers);
   }
   public function anonymous(Request $request)
   {
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $data = $request->all();
     return response($data, 200, $headers);
   }

@@ -16,7 +16,7 @@ class DataBaseController extends Controller {
     $data = $request->all();
     $tbl = $data["table"];
     $value = json_decode($data["value"]);
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $db = new MysqlAdaptor();
     $result = false;
 
@@ -36,7 +36,7 @@ class DataBaseController extends Controller {
     $id = $data['id'];
     $value = json_decode($data['value']);
 
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $db = new MysqlAdaptor();
     $result = false;
 
@@ -55,7 +55,7 @@ class DataBaseController extends Controller {
     $tbl = $data["table"];
     $id = $data['id'];
 
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $db = new MysqlAdaptor();
     $result = false;
 
@@ -74,7 +74,7 @@ class DataBaseController extends Controller {
     $tbl = $data["table"];
     $value = json_decode($data["value"]);
 
-    $headers = ['Access-Control-Allow-Origin' => 'http://localhost:8001'];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $db = new MysqlAdaptor();
     $result = false;
 

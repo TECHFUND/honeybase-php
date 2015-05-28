@@ -1,0 +1,22 @@
+{
+  "service" : {
+    "name" : "honeybase"
+  },
+  "origin" : {
+    "development" : "http://localhost:8001",
+    "production" : "http://honeybase.techfund.jp",
+  },
+  "oauth" : {
+    "facebook" : {
+      "consumer_key" : "759914587441162",
+      "consumer_secret" : "f4a21be93e9e6e8b682f6f3d47a3682d"
+    }
+  },
+  "database" : {
+    "host" : "localhost",
+    "username" : "root",
+    "password" : "root",
+    "name" : "test",
+    "log_path" : "/../../storage/logs/mysql.log"
+  }
+}
