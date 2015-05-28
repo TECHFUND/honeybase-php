@@ -81,7 +81,7 @@ class DataBaseController extends Controller {
     if($tbl == "" || $value == null){
       Log::error("select input invalid");
     } else {
-      $result = $db->select($tbl, $value)["flag"];
+      $result = $db->select($tbl, $value);
     }
     $res = $result;
     return response($res, 200, $headers);

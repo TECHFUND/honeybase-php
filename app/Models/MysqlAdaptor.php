@@ -49,11 +49,20 @@ class MysqlAdaptor {
 	 * @return		arr					true：array("ret":true, array(0:array, 1:array ...))　false：array("ret":false)
 	 */
 	function select($tbl, $data = array()) {
-
 		// init
 		$where = "";
 		$rows = array();
     $bool = false;
+
+		// search tbl
+		$sql = "SHOW TABLES FROM " . DB_NAME . " LIKE '" . $tbl . "';";
+		$result = mysqli_query($this->database, $sql);
+
+		// tbl none
+		if (0 == $result->num_rows) {
+			return ["flag"=>false, "data"=>array()];
+		}
+
 
 		// create where query
 		foreach ($data as $key => $value) {
@@ -146,7 +155,8 @@ class MysqlAdaptor {
 				$return_flg = true;
 			}
 		}
-		return ["flag"=>$return_flg, "data"=>$result->current_field];
+
+		return ["flag"=>$return_flg];
 	}
 
 
@@ -204,7 +214,7 @@ class MysqlAdaptor {
 				$return_flg = true;
 			}
 		}
-		return ["flag"=>$return_flg, "data"=>$result->current_field];
+		return ["flag"=>$return_flg];
 	}
 
 
@@ -244,7 +254,7 @@ class MysqlAdaptor {
       // 更新
       /* 変化無し・id無し・Schemeと合わない　のときはfalseが返る */
       $existance = $this->select($tbl, ["id"=>$id])["flag"];
-      $result = ($existance) ? mysqli_query($this->database, $sql) : false;
+      $result = ($existance) ? mysqli_query($this->database, $sql) : null;
 
 			if (1 != $this->database->affected_rows) {
 				// Roll back if there were rows affected is not one line
@@ -256,7 +266,7 @@ class MysqlAdaptor {
 				$return_flg = true;
 			}
 		}
-		return ["flag"=>$return_flg, "data"=>$result->current_field];
+		return ["flag"=>$return_flg];
 	}
 
   function genSetStr($data){
@@ -317,7 +327,7 @@ class MysqlAdaptor {
 				$return_flg = true;
 			}
 		}
-		return ["flag"=>$return_flg, "data"=>$result->current_field];
+		return ["flag"=>$return_flg];
 	}
 
   function errorReport($sql){
@@ -325,5 +335,10 @@ class MysqlAdaptor {
 		error_log($msg, 3, LOG_PATH);
     Log::error($msg);
   }
+
+	function mysql_exploit($result){
+		$data = ($result != null) ? $result->fetch_field()->social_id : null;
+		return $data;
+	}
 
 }

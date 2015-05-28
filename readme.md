@@ -10,7 +10,7 @@
 ## confirm
 - see `sample/index.html`
 
-### push
+### insert
 `curl -XPOST 'http://localhost:8000/api/v1/db/push' -d 'table=users_tbl&value={"name":"Shogo", "age": 24, "job":"engineer", "address": "Setagaya"}'`
 ### update
 `curl -XPOST 'http://localhost:8000/api/v1/db/update' -d 'table=users_tbl' -d 'id=9' -d 'value={"name":"Peaske","age":"27","job":"Designer","address":"Shibuya"}'`
@@ -24,5 +24,17 @@
 - `tail -f storage/logs/lumen.log`
 
 ## development roadmap status
-- http interface and controller readied.
-- push and select with DB by request params.
+
+### finished
+- insert
+- update
+- delete
+- select
+- auth(facebook)
+- current_user
+- logout
+
+### not finished
+- pubsub
+- SQL injection
+- SSL (cookie security)

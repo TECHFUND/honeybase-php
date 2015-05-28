@@ -4,7 +4,7 @@
   },
   "origin" : {
     "development" : "http://localhost:8001",
-    "production" : "http://honeybase.techfund.jp",
+    "production" : "http://honeybase.techfund.jp"
   },
   "oauth" : {
     "facebook" : {
@@ -17,6 +17,6 @@
     "username" : "root",
     "password" : "root",
     "name" : "test",
-    "log_path" : "/../../storage/logs/mysql.log"
+    "log_path" : "/../storage/logs/mysql.log"
   }
 }

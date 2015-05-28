@@ -13,6 +13,7 @@ use Facebook\GraphUser;
 use Facebook\FacebookRequestException;
 
 use Log;
+use App\Util\NuLog;
 use App\Util\Util;
 
 class AccountController extends Controller {
@@ -22,7 +23,20 @@ class AccountController extends Controller {
   {
     $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $data = $request->all();
-    return response($data, 200, $headers);
+    $social_id = $data['social_id'];
+    $db = new MysqlAdaptor();
+    $result = $db->select("sessions", ["social_id"=>$social_id]);
+    $flag = false;
+    $user = null;
+    if( count($result['data']) == 1 ){
+      $session = $result['data'][0];
+      $session_id = $session['session_id'];
+      $user_id = $session['user_id'];
+      $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id];
+      $user = $db->select("users", ["id"=>$user_id])['data'][0];
+      $flag = true;
+    }
+    return response(["flag"=>$flag, "user"=>$user], 200, $headers);
   }
 
   public function oauth(Request $request)
@@ -30,7 +44,6 @@ class AccountController extends Controller {
     $data = $request->all();
     $token = $data['user_access_token'];
     $provider = $data['provider'];
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
 
     if($provider == "facebook"){
       FacebookSession::setDefaultApplication(FACEBOOK_CONSUMER_KEY, FACEBOOK_CONSUMER_SECRET);
@@ -48,9 +61,9 @@ class AccountController extends Controller {
       }
       $user = $this->searchOrCreateUser($social_id);
       $session_id = $this->createOrUpdateSession($user);
-      setcookie(SERVICE_NAME."id", $session_id);
     }
 
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id];
     return response(["flag"=>true, "user"=>$user], 200, $headers);
   }
 
@@ -58,26 +71,32 @@ class AccountController extends Controller {
     /* アカウントがまだ存在しなかったら作る。存在したらスルー。 */
     $db = new MysqlAdaptor();
     $existing_user = $db->select("users", ["social_id"=>$social_id]);
-    $user = $existing_user["data"][0];
-    if( count($existing_user['data']) > 0 ){
+    $user = null;
+    if( count($existing_user['data']) == 0 ){
+      /* ユーザーが存在しないので、ユーザーを作る */
       $inserted_result = $db->insert("users", ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id]);
-      if($inserted_result['flag']){
-        $user = $inserted_result['data'];
-      }
+      $user = ($inserted_result['flag']) ? ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id] : null;
+    } else {
+      /* ユーザーが存在するので、検索ヒットしたユーザーを返す */
+      $user = $existing_user["data"][0];
     }
     return $user;
   }
 
   private function createOrUpdateSession($user){
     /* 既存・新規作成ユーザーIDをランダム文字列と紐づける */
-    $db = new MysqlAdaptor();
-    $existing_session = $db->select("sessions", ["social_id"=>$social_id]);
-    $new_session_id = Util::createRandomString(100);
-    if( count($existing_session['data']) > 0 ){
-      $target_id = $existing_session['data'][0]['id'];
-      $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']])
+    if(is_array($user)){
+      $db = new MysqlAdaptor();
+      $existing_session = $db->select("sessions", ["social_id"=>$user["social_id"]]);
+      $new_session_id = Util::createRandomString(100);
+      if( count($existing_session['data']) > 0 ) {
+        $target_id = $existing_session['data'][0]['id'];
+        $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']]);
+      } else {
+        $db->insert("sessions", ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']]);
+      }
     } else {
-      $db->insert("sessions", ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']])
+      Log::error("null arg in createOrUpdateSession");
     }
     return $new_session_id;
   }
@@ -86,7 +105,17 @@ class AccountController extends Controller {
   {
     $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $data = $request->all();
-    return response($data, 200, $headers);
+    $social_id = $data['social_id'];
+    $db = new MysqlAdaptor();
+    $result = $db->select("sessions", ["social_id"=>$social_id]);
+    $flag = false;
+    if( count($result["data"]) == 1 ){
+      $db->delete("sessions", $result["data"][0]['id']);
+      $flag = true;
+    } else {
+      NuLog::error('logout something wrong');
+    }
+    return response(["flag"=>$flag], 200, $headers);
   }
 
   /*

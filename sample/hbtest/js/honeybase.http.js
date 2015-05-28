@@ -64,18 +64,18 @@
                 user_access_token: response.authResponse.accessToken,
                 option: JSON.stringify(option)
               };
-              $_ajax("POST", self.api+"/oauth", params, function(data){
-                cb(null, data);
+              $_ajax("POST", self.api+"/oauth", params, function(res){
+                cb(res.flag, res.user);
               });
   		      } else {
    		        console.log('User cancelled login or did not fully authorize.');
-              cb(1, null);
+              cb(false, null);
   		      }
   		    });
         } else {
           console.log("Already logged in");
           self.logout();
-          cb(2, null);
+          cb(false, null);
         }
       });
     },
@@ -90,24 +90,28 @@
 			var self = this;
 			var params = {};
 	    FB.getLoginStatus(function(response) {
-		    FB.logout(function(response) {
-  				$_ajax("POST", self.api + "/logout", params, function(data) {
-						if(cb) cb(data.err);
+        params.social_id = response.authResponse.userID;
+        setTimeout(function(){
+	      FB.logout(function(response) {
+				  $_ajax("POST", self.api + "/logout", params, function(res) {
+						if(cb) cb(res.flag);
   				});
-        });
+	      });
+        }, 100);
       });
 		},
-		getCurrentUser : function(cb) {
+		current_user : function(cb) {
 			var self = this;
 			var params = {};
 	    FB.getLoginStatus(function(response) {
         if(response.status == "connected"){
+          params.social_id = response.authResponse.userID;
   				$_ajax("GET", self.api + "/get_current_user", params, function(data) {
-  					if(data.user) cb(null, data.user);
-  					else cb(2, null);
+  					if(data.user) cb(true, data.user);
+  					else cb(false, null);
           });
         } else {
-          cb(1, null);
+          cb(false, null);
         }
 			});
 		},
