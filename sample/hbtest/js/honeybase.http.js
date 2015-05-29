@@ -197,7 +197,7 @@
         var flag = res.flag;
         var data = res.data;
         data.value = JSON.parse(data.value);
-        cb(flag, data);
+        if(cb) cb(flag, data);
       });
 		},
     push: function(value, cb){
@@ -207,7 +207,7 @@
 			if(typeof id != "number") throw new Error("id must be number");
 			var params = { id: id+"", table : this.table };
       $_ajax("POST", this.db+"/delete", params, function(res){
-        cb(res.flag, res.data);
+        if(cb) cb(res.flag, res.data);
       });
 		},
     remove: function(id, cb){
@@ -221,7 +221,7 @@
 			var params = { id: id+"", table : this.table, value : value};
 
       $_ajax("POST", this.db+"/update", params, function(res){
-        cb(res.flag, res.data);
+        if(cb) cb(res.flag, res.data);
       });
 		},
     set: function(id, value, cb){

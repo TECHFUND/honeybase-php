@@ -47,7 +47,9 @@
 * View Component
 */
 (function(global){
+
   function Index(){}
+
   Index.loginView = function(){
 
     $("body").append("<button id='push'>push</button>");
@@ -105,8 +107,6 @@
   }
 
 
-
-
   Index.logoutView = function(){
     $("body").append("<button id='oauth'>oauth</button>");
     $("#oauth").click(function(e){
@@ -116,8 +116,6 @@
       });
     });
   }
-
-
 
 
   global.Index = Index;
@@ -141,8 +139,8 @@
 * MAIN
 */
 (function(){
-  honeybase.current_user(function(flag, user){
-    if(flag) Index.loginView();
+  honeybase.current_user(function(isLoggedIn, user){
+    if(isLoggedIn) Index.loginView();
     else Index.logoutView();
   });
 }());
