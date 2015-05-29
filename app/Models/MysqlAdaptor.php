@@ -117,7 +117,7 @@ class MysqlAdaptor {
 		// tbl none
 		if (0 == $result->num_rows) {
 			// create tbl
-			$this->create($tbl, $data);
+			$this->createTable($tbl, $data);
 		}
 
 		// count insert rows
@@ -166,7 +166,7 @@ class MysqlAdaptor {
 	 * @param		arr		$data			set
 	 * @return		arr					true：true　false：false
 	 */
-	function create($tbl, $data = array()) {
+	function createTable($tbl, $data = array()) {
 
 		// init
 		$create_str = $values_str = "";
@@ -217,6 +217,21 @@ class MysqlAdaptor {
 		return ["flag"=>$return_flg];
 	}
 
+	function createDB(){
+		$return_flg = false;
+		$sql = "CREATE DATABASE `" . DB_NAME . "` DEFAULT CHARACTER SET utf8;";
+		$result = mysqli_query($this->database, $sql);
+		$this->database->autocommit(FALSE);
+		if (1 != $this->database->affected_rows) {
+			$this->database->rollback();
+      $this->errorReport($sql);
+		} else {
+			// Had row affected commit if one line
+			$this->database->commit();
+			$return_flg = true;
+		}
+		return ["flag"=>$return_flg];
+	}
 
 
 

@@ -19,7 +19,7 @@
 		timestamp : null,
 		id_header : null
 	};
-	function HoneyBase(host, cb) {
+	function HoneyBase(host) {
 		this.host = format_host(host);
     this.api = this.host + "api/" + VERSION;
 	}
