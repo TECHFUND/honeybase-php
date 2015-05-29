@@ -96,5 +96,5 @@ require __DIR__.'/../app/Http/routes.php';
 require __DIR__.'/../config/define.php';
 
 $db = new App\Models\MysqlAdaptor();
-$db->createDB();
+
 return $app;

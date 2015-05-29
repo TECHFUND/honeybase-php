@@ -24,6 +24,15 @@ class MysqlAdaptor {
     } elseif (DB_NAME=="") {
       Log::error("no database name");
     }
+
+    $database = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD);
+		$sql = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = `".DB_NAME."`;";
+		$result = mysqli_query($database, $sql);
+		if (1 != $database->affected_rows) {
+			/* DB存在しないので作る */
+			$sql = "CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` DEFAULT CHARACTER SET utf8;";
+			$result = mysqli_query($database, $sql);
+		}
     $database = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 
 		// connect error
@@ -217,13 +226,11 @@ class MysqlAdaptor {
 		return ["flag"=>$return_flg];
 	}
 
-	function createDB(){
+	public static function createDB(){
 		$return_flg = false;
-		$sql = "CREATE DATABASE `" . DB_NAME . "` DEFAULT CHARACTER SET utf8;";
+		$sql = "CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` DEFAULT CHARACTER SET utf8;";
 		$result = mysqli_query($this->database, $sql);
-		$this->database->autocommit(FALSE);
 		if (1 != $this->database->affected_rows) {
-			$this->database->rollback();
       $this->errorReport($sql);
 		} else {
 			// Had row affected commit if one line
