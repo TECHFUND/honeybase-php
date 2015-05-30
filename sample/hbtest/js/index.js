@@ -3,6 +3,7 @@
  ***********************************/
 (function(global){
   global.honeybase = new HoneyBase("http://localhost:8000");
+  // global.honeybase = new HoneyBase("http://ec2-52-68-202-236.ap-northeast-1.compute.amazonaws.com");
   global.UserDB = honeybase.db("users_tbl");
   global.chance = new Chance();
 

@@ -75,7 +75,8 @@ class AccountController extends Controller {
     if( count($existing_user['data']) == 0 ){
       /* ユーザーが存在しないので、ユーザーを作る */
       $inserted_result = $db->insert("users", ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id]);
-      $user = ($inserted_result['flag']) ? ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id] : null;
+      $user = ($inserted_result['flag']) ? ["user_id"=>$inserted_result['id'], "unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id] : null;
+      /* ユーザーが存在しないときはidを返せてないっぽい */
     } else {
       /* ユーザーが存在するので、検索ヒットしたユーザーを返す */
       $user = $existing_user["data"][0];
@@ -91,9 +92,9 @@ class AccountController extends Controller {
       $new_session_id = Util::createRandomString(100);
       if( count($existing_session['data']) > 0 ) {
         $target_id = $existing_session['data'][0]['id'];
-        $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']]);
+        $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['user_id'], "social_id"=>$user['social_id']]);
       } else {
-        $db->insert("sessions", ["session_id"=>$new_session_id, "user_id"=>$user['id'], "social_id"=>$user['social_id']]);
+        $db->insert("sessions", ["session_id"=>$new_session_id, "user_id"=>$user['user_id'], "social_id"=>$user['social_id']]);
       }
     } else {
       Log::error("null arg in createOrUpdateSession");

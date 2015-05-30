@@ -2,6 +2,7 @@
 
 use mysqli;
 use Log;
+use App\Util\NuLog;
 
 /**
  * MysqlAdapter
@@ -115,6 +116,7 @@ class MysqlAdaptor {
 	function insert($tbl, $data = array()) {
 
 		// init
+		$insert_id = 0;
 		$insert_str = $values_str = "";
 		$sql_param = array();
 		$return_flg = false;
@@ -153,6 +155,7 @@ class MysqlAdaptor {
 
 			// query
 			$result = mysqli_query($this->database, $sql);
+			$insert_id = $this->database->insert_id;
 
 			if (1 != $this->database->affected_rows) {
 				// Roll back if there were rows affected is not one line
@@ -165,7 +168,7 @@ class MysqlAdaptor {
 			}
 		}
 
-		return ["flag"=>$return_flg];
+		return ["flag"=>$return_flg, "id"=>$insert_id];
 	}
 
 
