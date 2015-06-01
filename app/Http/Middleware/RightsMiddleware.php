@@ -32,7 +32,6 @@ class RightsMiddleware {
     $path_array = explode("/", $request->path());
     $action = array_pop($path_array);
     $permission_type = $rights->$table_name->$action;
-    // $header = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
     $header = ['Access-Control-Allow-Origin' => ORIGIN, "Access-Control-Allow-Credentials"=>"true"];
 
     if($rights->$table_name == null){
@@ -61,14 +60,6 @@ class RightsMiddleware {
       // 指定無し、あるいはnone
       return response(['flag'=>false, "error_message"=>"no such rights definision, or defined as none"], 403, $header);
     }
-
-    // admin, writer, login権限について
-    // - admin権限は、current_userがusersテーブルのtype: adminなユーザーのみにアクセスを許す
-    // - writer権限は、current_userがusersテーブルのtype: writerなユーザーのみにアクセスを許す
-    // - login権限は、current_user.idがresource.user_idなユーザーのみにアクセスを許す
-    // admin, writer権限はusersテーブルのtypeの値を自由に設定できる。matchしないときは"invalid user type"エラーを出す
-    // table : [] のarray_lengthが4を超えたら"invalid length"エラーを出す
-    // usersテーブルのtype: all, none, loginは予約語なので"reserved user type"エラーを出す
   }
 
 }

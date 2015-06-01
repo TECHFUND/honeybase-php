@@ -4,10 +4,8 @@
 (function(global){
   global.honeybase = new HoneyBase("http://localhost:8000");
   // global.honeybase = new HoneyBase("http://ec2-52-68-202-236.ap-northeast-1.compute.amazonaws.com");
-  global.UserDB = honeybase.db("users_tbl");
+  global.CustomerDB = honeybase.db("customer_tbl");
   global.chance = new Chance();
-
-
 
   function AI (){}
   AI.renderUserList = function (datum){
@@ -69,7 +67,7 @@
      * MAIN FUNCTIONS
      ***********************************/
     /* 一覧表示 */
-    UserDB.select({}).done(function(flag, data){
+    CustomerDB.select({}).done(function(flag, data){
       data.map(function(datum){
         AI.renderUserList(datum);
         return true;
@@ -78,14 +76,14 @@
       /*更新ボタン*/ //schemeが違ったり変更がなかったりidがなかったりするとflagがfalse
       $(".update").click(function(e){
         var rand_data = {name: chance.name(), age: chance.age(), job: chance.cc_type(), address: chance.city()};
-        UserDB.update(AI.clickedID(e), rand_data, function(flag, data){
+        CustomerDB.update(AI.clickedID(e), rand_data, function(flag, data){
           AI.afterReload(flag);
         });
       });
 
       /*削除ボタン*/
       $(".delete").click(function(e){
-        UserDB.delete(AI.clickedID(e), function(flag, data){
+        CustomerDB.delete(AI.clickedID(e), function(flag, data){
           AI.afterReload(flag);
         });
       });
@@ -94,7 +92,7 @@
     /* click時にpushして更新 */
     $("#push").click(function(e){
       var rand_data = {name: chance.name(), age: chance.age(), job: chance.cc_type(), address: chance.city(), user_id: current_user.id};
-      UserDB.insert(rand_data, function(flag, data){
+      CustomerDB.insert(rand_data, function(flag, data){
         AI.afterReload(flag);
       });
     });
