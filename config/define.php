@@ -2,6 +2,9 @@
 
 $data = App\Util\Util::getJSON(__DIR__.'/config.json');
 
+/* path */
+define("__CONFIG__", __DIR__.'/');
+
 /* general */
 define("SERVICE_NAME", $data->service->name);
 define("ORIGIN", $data->origin->development);

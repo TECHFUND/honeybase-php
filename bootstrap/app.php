@@ -67,6 +67,10 @@ $app->singleton(
 
 // ]);
 
+$app->routeMiddleware([
+    'rights' => 'App\Http\Middleware\RightsMiddleware'
+]);
+
 /*
 |--------------------------------------------------------------------------
 | Register Service Providers

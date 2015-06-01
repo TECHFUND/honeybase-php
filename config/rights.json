@@ -7,8 +7,14 @@
   },
   "articles" : {
     "insert":"writer",
-    "select":"user",
+    "select":"all",
     "update":"writer",
     "delete":"writer"
+  },
+  "users_tbl" : {
+    "insert":"login",
+    "select":"all",
+    "update":"login",
+    "delete":"login"
   }
 }

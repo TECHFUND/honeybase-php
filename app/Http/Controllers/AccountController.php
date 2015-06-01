@@ -44,7 +44,6 @@ class AccountController extends Controller {
   public function oauth(Request $request)
   {
     $session_id = $request->cookie(SERVICE_NAME.'id');
-    NuLog::info($session_id); // should be null
     $data = $request->all();
     $token = $data['user_access_token'];
     $provider = $data['provider'];
@@ -106,7 +105,7 @@ class AccountController extends Controller {
     $user = null;
     if( count($existing_user['data']) == 0 ){
       /* ユーザーが存在しないので、ユーザーを作る */
-      $user_data = ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id, "type"=>"login"];
+      $user_data = ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id, "type"=>""];
       $inserted_result = $db->insert("users", $user_data);
       $user_data += ["id"=>$inserted_result['id']];
       $user = ($inserted_result['flag']) ? $user_data : null;

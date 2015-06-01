@@ -51,7 +51,7 @@
 
   function Index(){}
 
-  Index.loginView = function(){
+  Index.loginView = function(current_user){
 
     $("body").append("<button id='push'>push</button>");
     $("body").append("<button id='logout'>logout</button>");
@@ -79,30 +79,30 @@
       $(".update").click(function(e){
         var rand_data = {name: chance.name(), age: chance.age(), job: chance.cc_type(), address: chance.city()};
         UserDB.update(AI.clickedID(e), rand_data, function(flag, data){
-          //AI.afterReload(flag);
+          AI.afterReload(flag);
         });
       });
 
       /*削除ボタン*/
       $(".delete").click(function(e){
         UserDB.delete(AI.clickedID(e), function(flag, data){
-          //AI.afterReload(flag);
+          AI.afterReload(flag);
         });
       });
     });
 
     /* click時にpushして更新 */
     $("#push").click(function(e){
-      var rand_data = {name: chance.name(), age: chance.age(), job: chance.cc_type(), address: chance.city()};
+      var rand_data = {name: chance.name(), age: chance.age(), job: chance.cc_type(), address: chance.city(), user_id: current_user.id};
       UserDB.insert(rand_data, function(flag, data){
-        //AI.afterReload(flag);
+        AI.afterReload(flag);
       });
     });
 
     $("#logout").click(function(e){
       honeybase.logout(function(flag){
         console.log('logged out');
-        //AI.afterReload(flag);
+        AI.afterReload(flag);
       });
     });
   }
@@ -113,7 +113,7 @@
     $("#oauth").click(function(e){
       honeybase.auth("facebook", function(flag, user){
         console.log(flag, user);
-        //AI.afterReload(flag);
+        AI.afterReload(flag);
       });
     });
   }
@@ -140,8 +140,8 @@
 * MAIN
 */
 (function(){
-  honeybase.current_user(function(isLoggedIn, user){
-    if(isLoggedIn) Index.loginView();
+  honeybase.current_user(function(isLoggedIn, current_user){
+    if(isLoggedIn) Index.loginView(current_user);
     else Index.logoutView();
   });
 }());

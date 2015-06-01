@@ -20,7 +20,7 @@ $app->post('api/v1/oauth', 'App\Http\Controllers\AccountController@oauth');
 $app->post('api/v1/logout', 'App\Http\Controllers\AccountController@logout');
 
 
-$app->post('api/v1/db/insert', 'App\Http\Controllers\DataBaseController@insert');
-$app->post('api/v1/db/update', 'App\Http\Controllers\DataBaseController@update');
-$app->post('api/v1/db/delete', 'App\Http\Controllers\DataBaseController@delete');
-$app->get('api/v1/db/select', 'App\Http\Controllers\DataBaseController@select');
+$app->post('api/v1/db/insert', ['uses'=>'App\Http\Controllers\DataBaseController@insert', 'middleware' => 'rights']);
+$app->post('api/v1/db/update', ['uses'=>'App\Http\Controllers\DataBaseController@update', 'middleware' => 'rights']);
+$app->post('api/v1/db/delete', ['uses'=>'App\Http\Controllers\DataBaseController@delete', 'middleware' => 'rights']);
+$app->get('api/v1/db/select', ['uses'=>'App\Http\Controllers\DataBaseController@select', 'middleware' => 'rights']);
