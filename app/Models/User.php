@@ -9,7 +9,10 @@ class User {
     $session_array = $db->select("sessions", ["session_id"=>$session_id])['data'];
     if( count($session_array) > 0 ){
       $session = $session_array[0];
-      $current_user = $db->select("users", ["id"=>$session['user_id']])['data'][0];
+      $current_user_array = $db->select("users", ["id"=>$session['user_id']])['data'];
+      if( count($current_user_array) > 0 ){
+        $current_user = $current_user_array[0];
+      }
     }
     return $current_user;
   }

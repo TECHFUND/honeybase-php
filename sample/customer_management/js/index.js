@@ -5,6 +5,15 @@
   global.honeybase = new HoneyBase("http://localhost:8000");
   // global.honeybase = new HoneyBase("http://ec2-52-68-202-236.ap-northeast-1.compute.amazonaws.com");
   global.CustomerDB = honeybase.db("customer_tbl");
+  /* 以下をconfig/rights.jsonに付け加える
+  ,"customers_tbl" : {
+    "insert":"login",
+    "select":"all",
+    "update":"login",
+    "delete":"login"
+  }
+
+  */
   global.chance = new Chance();
 
   function AI (){}

@@ -32,8 +32,11 @@ class AccountController extends Controller {
       $session = $result['data'][0];
       $user_id = $session['user_id'];
       $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
-      $user = $db->select("users", ["id"=>$user_id])['data'][0];
-      $flag = true;
+      $user_array = $db->select("users", ["id"=>$user_id])['data'];
+      if( count($user_array) > 0 ){
+        $user = $user_array[0];
+        $flag = true;
+      }
     } else {
       // sessionのcookieと違うのでcookieを消してやる
       $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>"", "Access-Control-Allow-Credentials"=>"true"];
@@ -47,6 +50,10 @@ class AccountController extends Controller {
     $data = $request->all();
     $token = $data['user_access_token'];
     $provider = $data['provider'];
+    $code = 503;
+    $msg = "";
+    $social_id = null;
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Access-Control-Allow-Credentials"=>"true"];
 
     if($provider == "facebook"){
       FacebookSession::setDefaultApplication(FACEBOOK_CONSUMER_KEY, FACEBOOK_CONSUMER_SECRET);
@@ -57,17 +64,19 @@ class AccountController extends Controller {
           $me_request = new FacebookRequest($session, 'GET', '/me');
           $user_profile = $me_request->execute()->getGraphObject(GraphUser::className());
           $social_id = $user_profile->getId();
+          $code = 200;
+          $headers += ["Set-Cookie"=>SERVICE_NAME."id"."=".$session_id];
         } catch(FacebookRequestException $e) {
-          Log::error( "Exception occured, code: " . $e->getCode() );
-          Log::error( " with message: " . $e->getMessage() );
+          $code = $e->getCode();
+          $msg = $e->getMessage();
+          return response(["flag"=>false, "user"=>null, "msg"=>$msg], 403, $headers);
         }
       }
       $user = $this->searchOrCreateUser($social_id);
       $session_id = $this->createOrUpdateSession($user);
     }
 
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
-    return response(["flag"=>true, "user"=>$user], 200, $headers);
+    return response(["flag"=>true, "user"=>$user], $code, $headers);
   }
 
   public function logout(Request $request)
@@ -84,10 +93,10 @@ class AccountController extends Controller {
       $status = 200;
       $db->delete("sessions", $result["data"][0]['id']);
       $headers += ["Set-Cookie"=>""];
+      return response(["flag"=>$flag], $status, $headers);
     } else {
-      NuLog::error('logout something wrong');
+      return response(["flag"=>false], 503, $headers);
     }
-    return response(["flag"=>$flag], $status, $headers);
   }
 
 

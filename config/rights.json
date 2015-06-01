@@ -1,20 +1,14 @@
 {
   "users" : {
-    "insert":"all",
+    "insert":"none",
     "select":"login",
-    "update":"login",
+    "update":"admin",
     "delete":"admin"
   },
-  "articles" : {
-    "insert":"writer",
-    "select":"all",
-    "update":"writer",
-    "delete":"writer"
-  },
-  "users_tbl" : {
-    "insert":"login",
-    "select":"all",
-    "update":"login",
-    "delete":"login"
+  "sessions" : {
+    "insert":"none",
+    "select":"none",
+    "update":"none",
+    "delete":"none"
   }
 }

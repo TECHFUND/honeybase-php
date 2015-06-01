@@ -14,7 +14,7 @@ class RightsMiddleware {
    * @param  \Closure  $next
    * @return mixed
    */
-  // MiddleWareでinsert, select含めたrequestのuser_idを取得してcurrent_user.idと比較するのはありかも
+  // MiddleWareでinsert, select含めたrequestのuser_idを取得してcurrent_user->idと比較するのはありかも
   // insert, update, delete, selectにaccess: all, none, loginを定義できる
   public function handle($request, Closure $next){
     $data = $request->all();
@@ -31,34 +31,39 @@ class RightsMiddleware {
     $current_user = User::current_user($session_id);
     $path_array = explode("/", $request->path());
     $action = array_pop($path_array);
-    $permission_type = $rights->$table_name->$action;
     $header = ['Access-Control-Allow-Origin' => ORIGIN, "Access-Control-Allow-Credentials"=>"true"];
 
-    if($rights->$table_name == null){
-      return response(["flag"=>false, "error_message"=>"no such table_name in rights definision"], 503, $header);
-    }
-    if($permission_type == null){
-      $permission_type = "none";
-    }
+    if( property_exists($rights,$table_name) ){
+      $permission_type = $rights->$table_name->$action;
 
-    if ($permission_type == "all") {
-      return $next($request);
-    } elseif ($permission_type == "owner") {
-      if($data[$resource_user_id] == $current_user.id){
-        return $next($request);
+      if($rights->$table_name == null){
+        return response(["flag"=>false, "error_message"=>"no such table_name in rights definision"], 503, $header);
       }
-    } elseif ($permission_type == "login") {
-      if($current_user != null){
+      if($permission_type == null){
+        $permission_type = "none";
+      }
+
+      if ($permission_type == "all") {
+        return $next($request);
+      } elseif ($permission_type == "owner") {
+        if($data[$resource_user_id] == $current_user['id']){
+          return $next($request);
+        }
+      } elseif ($permission_type == "login") {
+        if($current_user != null){
+          return $next($request);
+        } else {
+          return response(['flag'=>false, "error_message"=>"required login but not logged in"], 403, $header);
+        }
+      } elseif($permission_type == $current_user['type']){
+        // admin, writerのようなユーザー定義権限
         return $next($request);
       } else {
-        return response(['flag'=>false, "error_message"=>"required login but not logged in"], 403, $header);
+        // 指定無し、あるいはnone
+        return response(['flag'=>false, "error_message"=>"no such rights definision, or defined as none"], 403, $header);
       }
-    } elseif($permission_type == $current_user.type){
-      // admin, writerのようなユーザー定義権限
-      return $next($request);
     } else {
-      // 指定無し、あるいはnone
-      return response(['flag'=>false, "error_message"=>"no such rights definision, or defined as none"], 403, $header);
+      return response(['flag'=>false, "error_message"=>"no table in rights definition"], 503, $header);
     }
   }
 
