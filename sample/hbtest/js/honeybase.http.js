@@ -105,7 +105,6 @@
 			var params = {};
 	    FB.getLoginStatus(function(response) {
         if(response.status == "connected"){
-          params.social_id = response.authResponse.userID;
   				$_ajax("GET", self.api + "/get_current_user", params, function(data) {
   					if(data.user) cb(true, data.user);
   					else cb(false, null);
@@ -364,7 +363,7 @@
   	var params_str = querystring(params);
 		if(method=="GET" && params_str != "") url += "?"+params_str;
   	xhr.open(method , url);
-  	xhr.withCredentials = false;
+  	xhr.withCredentials = true;
   	xhr.onload = function() {
   		cb(JSON.parse(xhr.responseText));
   	}

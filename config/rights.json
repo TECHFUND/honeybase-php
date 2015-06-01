@@ -1,0 +1,14 @@
+{
+  "users" : {
+    "insert":"all",
+    "select":"login",
+    "update":"login",
+    "delete":"admin"
+  },
+  "articles" : {
+    "insert":"writer",
+    "select":"user",
+    "update":"writer",
+    "delete":"writer"
+  }
+}

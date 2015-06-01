@@ -21,26 +21,30 @@ class AccountController extends Controller {
   /* jsからajaxするときvar_dumpしてると落ちてallow_originエラーになるので注意 */
   public function getCurrentUser(Request $request)
   {
+    $session_id = $request->cookie(SERVICE_NAME.'id');
     $headers = ['Access-Control-Allow-Origin' => ORIGIN];
     $data = $request->all();
-    $social_id = $data['social_id'];
     $db = new MysqlAdaptor();
-    $result = $db->select("sessions", ["social_id"=>$social_id]);
+    $result = $db->select("sessions", ["session_id"=>$session_id]); // "id"=>にしたい
     $flag = false;
     $user = null;
     if( count($result['data']) == 1 ){
       $session = $result['data'][0];
-      $session_id = $session['session_id'];
       $user_id = $session['user_id'];
-      $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id];
+      $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
       $user = $db->select("users", ["id"=>$user_id])['data'][0];
       $flag = true;
+    } else {
+      // sessionのcookieと違うのでcookieを消してやる
+      $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>"", "Access-Control-Allow-Credentials"=>"true"];
     }
     return response(["flag"=>$flag, "user"=>$user], 200, $headers);
   }
 
   public function oauth(Request $request)
   {
+    $session_id = $request->cookie(SERVICE_NAME.'id');
+    NuLog::info($session_id); // should be null
     $data = $request->all();
     $token = $data['user_access_token'];
     $provider = $data['provider'];
@@ -63,10 +67,38 @@ class AccountController extends Controller {
       $session_id = $this->createOrUpdateSession($user);
     }
 
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id];
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
     return response(["flag"=>true, "user"=>$user], 200, $headers);
   }
 
+  public function logout(Request $request)
+  {
+    $db = new MysqlAdaptor();
+    $session_id = $request->cookie(SERVICE_NAME.'id');
+    $result = $db->select("sessions", ["session_id"=>$session_id]);
+    $flag = false;
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Access-Control-Allow-Credentials"=>"true"];
+    $status = 503;
+
+    if( count($result["data"]) == 1 ){
+      $flag = true;
+      $status = 200;
+      $db->delete("sessions", $result["data"][0]['id']);
+      $headers += ["Set-Cookie"=>""];
+    } else {
+      NuLog::error('logout something wrong');
+    }
+    return response(["flag"=>$flag], $status, $headers);
+  }
+
+
+
+
+
+
+  /****************************
+   * OAUTH FUNCTION
+   ****************************/
   private function searchOrCreateUser($social_id){
     /* アカウントがまだ存在しなかったら作る。存在したらスルー。 */
     $db = new MysqlAdaptor();
@@ -74,8 +106,10 @@ class AccountController extends Controller {
     $user = null;
     if( count($existing_user['data']) == 0 ){
       /* ユーザーが存在しないので、ユーザーを作る */
-      $inserted_result = $db->insert("users", ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id]);
-      $user = ($inserted_result['flag']) ? ["user_id"=>$inserted_result['id'], "unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id] : null;
+      $user_data = ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id, "type"=>"login"];
+      $inserted_result = $db->insert("users", $user_data);
+      $user_data += ["id"=>$inserted_result['id']];
+      $user = ($inserted_result['flag']) ? $user_data : null;
       /* ユーザーが存在しないときはidを返せてないっぽい */
     } else {
       /* ユーザーが存在するので、検索ヒットしたユーザーを返す */
@@ -88,13 +122,13 @@ class AccountController extends Controller {
     /* 既存・新規作成ユーザーIDをランダム文字列と紐づける */
     if(is_array($user)){
       $db = new MysqlAdaptor();
-      $existing_session = $db->select("sessions", ["social_id"=>$user["social_id"]]);
+      $existing_session = $db->select("sessions", ["user_id"=>$user["id"]]);
       $new_session_id = Util::createRandomString(100);
       if( count($existing_session['data']) > 0 ) {
         $target_id = $existing_session['data'][0]['id'];
-        $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['user_id'], "social_id"=>$user['social_id']]);
+        $db->update("sessions", $target_id, ["session_id"=>$new_session_id, "user_id"=>$user['id']]);
       } else {
-        $db->insert("sessions", ["session_id"=>$new_session_id, "user_id"=>$user['user_id'], "social_id"=>$user['social_id']]);
+        $db->insert("sessions", ["session_id"=>$new_session_id, "user_id"=>$user['id']]);
       }
     } else {
       Log::error("null arg in createOrUpdateSession");
@@ -102,41 +136,4 @@ class AccountController extends Controller {
     return $new_session_id;
   }
 
-  public function logout(Request $request)
-  {
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
-    $data = $request->all();
-    $social_id = $data['social_id'];
-    $db = new MysqlAdaptor();
-    $result = $db->select("sessions", ["social_id"=>$social_id]);
-    $flag = false;
-    if( count($result["data"]) == 1 ){
-      $db->delete("sessions", $result["data"][0]['id']);
-      $flag = true;
-    } else {
-      NuLog::error('logout something wrong');
-    }
-    return response(["flag"=>$flag], 200, $headers);
-  }
-
-  /*
-  public function signup(Request $request)
-  {
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
-    $data = $request->all();
-    return response($data, 200, $headers);
-  }
-  public function login(Request $request)
-  {
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
-    $data = $request->all();
-    return response($data, 200, $headers);
-  }
-  public function anonymous(Request $request)
-  {
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
-    $data = $request->all();
-    return response($data, 200, $headers);
-  }
-  */
 }

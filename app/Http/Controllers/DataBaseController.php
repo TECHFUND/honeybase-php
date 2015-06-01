@@ -16,8 +16,11 @@ class DataBaseController extends Controller {
     $data = $request->all();
     $tbl = $data["table"];
     $value = json_decode($data["value"]);
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
+
+    $session_id = $request->cookie(SERVICE_NAME.'id');
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
     $db = new MysqlAdaptor();
+
     $result = false;
 
     if($tbl == "" || $value == null){
@@ -36,7 +39,8 @@ class DataBaseController extends Controller {
     $id = $data['id'];
     $value = json_decode($data['value']);
 
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
+    $session_id = $request->cookie(SERVICE_NAME.'id');
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
     $db = new MysqlAdaptor();
     $result = false;
 
@@ -55,7 +59,8 @@ class DataBaseController extends Controller {
     $tbl = $data["table"];
     $id = $data['id'];
 
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
+    $session_id = $request->cookie(SERVICE_NAME.'id');
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
     $db = new MysqlAdaptor();
     $result = false;
 
@@ -74,7 +79,8 @@ class DataBaseController extends Controller {
     $tbl = $data["table"];
     $value = json_decode($data["value"]);
 
-    $headers = ['Access-Control-Allow-Origin' => ORIGIN];
+    $session_id = $request->cookie(SERVICE_NAME.'id');
+    $headers = ['Access-Control-Allow-Origin' => ORIGIN, "Set-Cookie"=>SERVICE_NAME."id"."=".$session_id, "Access-Control-Allow-Credentials"=>"true"];
     $db = new MysqlAdaptor();
     $result = false;
 
