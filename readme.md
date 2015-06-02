@@ -4,6 +4,9 @@
 - install composer & lumen in [here](http://lumen.laravel.com/docs/installation#install-composer)
 - `composer update`
 
+## test
+- `vendor/bin/phpunit`
+
 ## serve
 - `php artisan serve`
 
@@ -35,6 +38,5 @@
 - logout
 
 ### not finished
-- pubsub
-- SQL injection
-- SSL (cookie security)
+- SSL (use tinycert)
+- pubsub(use redis)
