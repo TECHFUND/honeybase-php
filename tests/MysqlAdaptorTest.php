@@ -24,6 +24,7 @@ class MysqlAdaptorTest extends TestCase {
   }
   public function testMySQLUpdate() {
     $test_database = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+    $insert_result = mysqli_query($test_database, 'insert into '.$this->tbl.' (title, description, user_id) values ("hoge", "fuga", 1) ;');
     $select_result = mysqli_query($test_database, 'select * from '.$this->tbl.' order by id desc limit 1');
     $last_id = $select_result->fetch_all()[0][0];
 
@@ -34,6 +35,7 @@ class MysqlAdaptorTest extends TestCase {
   }
   public function testMySQLSelect() {
     $test_database = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+    $insert_result = mysqli_query($test_database, 'insert into '.$this->tbl.' (title, description, user_id) values ("hoge", "fuga", 1) ;');
     $select_result = mysqli_query($test_database, 'select * from '.$this->tbl.' ;');
     $len = $select_result->num_rows;
 
@@ -43,3 +45,4 @@ class MysqlAdaptorTest extends TestCase {
     $this->assertEquals($len, count($result['data']));
   }
 }
+
