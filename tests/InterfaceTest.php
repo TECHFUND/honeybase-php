@@ -9,7 +9,7 @@ class InterfaceTest extends TestCase {
     $this->assertResponseOk();
   }
   public function testOAuth() {
-    $response = $this->call('POST', '/api/v1/oauth', ["user_access_token"=>"", "provider"=>"facebook"]);
+    $response = $this->call('POST', '/api/v1/oauth', ["user_access_token"=>"", "provider"=>"facebook", "option"=>"{'email':'hoge@hoge.com'}"]);
     $this->assertResponseStatus(403);
   }
   public function testLogout() {

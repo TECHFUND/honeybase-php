@@ -49,6 +49,7 @@ class AccountController extends Controller {
     $session_id = $request->cookie(SERVICE_NAME.'id');
     $data = $request->all();
     $token = $data['user_access_token'];
+    $options = json_decode($data['option']);
     $provider = $data['provider'];
     $code = 503;
     $msg = "";
@@ -72,7 +73,7 @@ class AccountController extends Controller {
           return response(["flag"=>false, "user"=>null, "msg"=>$msg], 403, $headers);
         }
       }
-      $user = $this->searchOrCreateUser($social_id);
+      $user = $this->searchOrCreateUser($social_id, $options);
       $session_id = $this->createOrUpdateSession($user);
     }
 
@@ -107,7 +108,7 @@ class AccountController extends Controller {
   /****************************
    * OAUTH FUNCTION
    ****************************/
-  private function searchOrCreateUser($social_id){
+  private function searchOrCreateUser($social_id, $options){
     /* アカウントがまだ存在しなかったら作る。存在したらスルー。 */
     $db = new MysqlAdaptor();
     $existing_user = $db->select("users", ["social_id"=>$social_id]);
@@ -115,6 +116,9 @@ class AccountController extends Controller {
     if( count($existing_user['data']) == 0 ){
       /* ユーザーが存在しないので、ユーザーを作る */
       $user_data = ["unique_name"=>"", "nick_name"=>"", "social_id"=>$social_id, "type"=>""];
+      foreach($options as $key => $value){
+        $user_data += array($key, $value);
+      }
       $inserted_result = $db->insert("users", $user_data);
       $user_data += ["id"=>$inserted_result['id']];
       $user = ($inserted_result['flag']) ? $user_data : null;
