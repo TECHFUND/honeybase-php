@@ -11,7 +11,6 @@ class MysqlAdaptorTest extends TestCase {
   public function testMySQLInsert() {
     $db = new MysqlAdaptor();
     $result = $db->insert("articles", ['title'=>Util::createRandomString(10), 'description'=>Util::createRandomString(20), "user_id"=>1]);
-    NuLog::info($result['id'],__FILE__,__LINE__);
     $this->assertEquals(true, $result['flag']);
   }
   public function testMySQLDelete() {

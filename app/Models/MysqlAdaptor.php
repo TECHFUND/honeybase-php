@@ -84,7 +84,7 @@ class MysqlAdaptor {
 			if (NULL === $value) {
 				$where .= $key . " IS NULL";
 			} else {
-				$where .= $key . " = '" . $value . "'";
+				$where .= $key . " = '" . $this->database->real_escape_string($value) . "'";
 			}
 		}
 
@@ -94,7 +94,7 @@ class MysqlAdaptor {
 		// query
 		$result = mysqli_query($this->database, $sql);
 
-		if (0 != $result->num_rows) {
+		if (gettype($result) != 'boolean' && 0 != $result->num_rows) {
 			// loop
 			while ($row = $result->fetch_assoc()) {
 				$rows[] = $row;
